@@ -4,3 +4,7 @@
 
 NOTE: This software was developed on VisualStudio 2022 environment keep in mind that all
 tools need to be updated in orden to compile correctly.
+
+DOXYGEN: If you want to generate Doxygen Documentation then open CMD as administrator 
+into solution dir and run  "doxygen Doxgile" to generete it.
+
