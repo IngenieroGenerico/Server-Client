@@ -1,0 +1,4 @@
+Cliente ID: 1, Usuario: user_86 (ID: 86)
+Cliente ID: 1, Usuario: user_155 (ID: 155)
+Cliente ID: 1, Usuario: user_13 (ID: 13)
+Cliente ID: 1, Usuario: user_186 (ID: 186)
