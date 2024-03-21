@@ -1,2 +1,6 @@
 .vs/
-.Bin/
+*.exe
+*.pdb
+*.obj
+*.tlog
+*.ilk

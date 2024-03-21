@@ -21,7 +21,7 @@ enum ConsoleColor {
     WHITE
 };
 
-void SetConsoleColor(ConsoleColor textColor) {
+static void SetConsoleColor(ConsoleColor textColor) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, textColor);
 }

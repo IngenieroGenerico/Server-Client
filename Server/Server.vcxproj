@@ -19,10 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\CHandlerSession.cpp" />
+    <ClCompile Include="Src\CServer.cpp" />
     <ClCompile Include="Src\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\CHandlerSession.h" />
     <ClInclude Include="Include\ConsoleStyle.h" />
+    <ClInclude Include="Include\CServer.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -108,6 +112,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Lib\$(Configuration)\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImportLibrary>$(SolutionDir)Lib\$(PlatformTarget)\$(TargetName).lib</ImportLibrary>
       <ProfileGuidedDatabase>$(SolutionDir)Lib\$(PlatformTarget)\$(TargetName).pgd</ProfileGuidedDatabase>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <BuildLog>
       <Path>$(SolutionDir)Intermediate\$(ProjectName)\$(Configuration)\$(Platform).log</Path>
@@ -131,6 +136,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Lib\$(Configuration)\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImportLibrary>$(SolutionDir)Lib\$(PlatformTarget)\$(TargetName).lib</ImportLibrary>
       <ProfileGuidedDatabase>$(SolutionDir)Lib\$(PlatformTarget)\$(TargetName).pgd</ProfileGuidedDatabase>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <BuildLog>
       <Path>$(SolutionDir)Intermediate\$(ProjectName)\$(Configuration)\$(Platform).log</Path>
@@ -150,6 +156,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Lib\$(Configuration)\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImportLibrary>$(SolutionDir)Lib\$(PlatformTarget)\$(TargetName).lib</ImportLibrary>
       <ProfileGuidedDatabase>$(SolutionDir)Lib\$(PlatformTarget)\$(TargetName).pgd</ProfileGuidedDatabase>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <BuildLog>
       <Path>$(SolutionDir)Intermediate\$(ProjectName)\$(Configuration)\$(Platform).log</Path>
@@ -173,6 +180,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Lib\$(Configuration)\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImportLibrary>$(SolutionDir)Lib\$(PlatformTarget)\$(TargetName).lib</ImportLibrary>
       <ProfileGuidedDatabase>$(SolutionDir)Lib\$(PlatformTarget)\$(TargetName).pgd</ProfileGuidedDatabase>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <BuildLog>
       <Path>$(SolutionDir)Intermediate\$(ProjectName)\$(Configuration)\$(Platform).log</Path>
