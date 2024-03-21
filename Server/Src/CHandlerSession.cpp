@@ -1,21 +1,25 @@
 #include "CHandlerSession.h"
 
+CHandlerSession::CHandlerSession(tcp::socket socket, int id, string* pfile_name) : m_socket(move(socket)), m_id(id)
+{
+	p_file_name = pfile_name;
+}
 
-CHandlerSession::CHandlerSession(tcp::socket socket, int id) : socket(move(socket)), id(id)
+CHandlerSession::~CHandlerSession()
 {
 }
 
-void CHandlerSession::start()
+void CHandlerSession::Start()
 {
 	// Asignar un nombre único al cliente
-	clientName = "Client_" + to_string(id);
-	cout << "New connection: " << clientName << endl;
+	m_client_name = "Client_" + to_string(m_id);
+	cout << "New connection: " << m_client_name << endl;
 
 	// Comenzar a manejar las interacciones con el cliente
-	handleClient();
+	HandleClient();
 }
 
-void CHandlerSession::handleClient()
+void CHandlerSession::HandleClient()
 {
 	try
 	{
@@ -23,12 +27,12 @@ void CHandlerSession::handleClient()
 		{
 			char data[1024];
 			asio::error_code error;
-			size_t length = socket.read_some(asio::buffer(data), error);
-			lastRequestTime = chrono::steady_clock::now(); // Actualizar el tiempo de la última solicitud
+			size_t length = m_socket.read_some(asio::buffer(data), error);
+			m_last_request = chrono::steady_clock::now(); // Actualizar el tiempo de la última solicitud
 
 			if (error == asio::error::eof)
 			{
-				cout << "Lost connection: " << clientName << endl;
+				cout << "Lost connection: " << m_client_name << endl;
 				break; // La conexión se cerró correctamente por el cliente.
 			}
 			else if (error)
@@ -38,25 +42,25 @@ void CHandlerSession::handleClient()
 			string message(data, length);
 
 			// Procesar la solicitud del cliente
-			string response = processRequest(message);
+			string response = ProcessRequest(message);
 
 			// Enviar respuesta al cliente
-			asio::write(socket, asio::buffer(response));
+			asio::write(m_socket, asio::buffer(response));
 		}
 	}
 	catch (exception& e)
 	{
-		cerr << "Exception HandleClient: " << clientName << ": " << e.what() << endl;
+		cerr << "Exception HandleClient: " << m_client_name << ": " << e.what() << endl;
 	}
 }
 
 chrono::steady_clock::time_point CHandlerSession::getLastRequestTime() const
 {
-	return lastRequestTime;
+	return m_last_request;
 }
 
 
-string CHandlerSession::processRequest(const string& request)
+string CHandlerSession::ProcessRequest(const string& request)
 {
 	// Analizar la solicitud del cliente
 	stringstream ss(request);
@@ -66,7 +70,7 @@ string CHandlerSession::processRequest(const string& request)
 	string result;
 
 	// Verificar si el ID ya está en uso
-	if (userMap.find(id) != userMap.end())
+	if (m_id_users.find(id) != m_id_users.end())
 	{
 		SetConsoleColor(RED);
 		result = "DENIED id already exist";
@@ -75,20 +79,20 @@ string CHandlerSession::processRequest(const string& request)
 	{
 		SetConsoleColor(WHITE);
 		// Almacenar el usuario en el mapa
-		userMap[id] = name;
+		m_id_users[id] = name;
 		// Construir y devolver la respuesta
 		result = "SUCCESS user added";
 		// Escribir en el archivo
-		std::ofstream outFile(fileName, std::ios::app); // Usar el nombre de archivo del servidor
+		std::ofstream outFile(*p_file_name, std::ios::app); // Usar el nombre de archivo del servidor
 		if (outFile.is_open())
 		{
-			outFile << "Client ID: " << this->id << ", User: " << name << " (ID: " << id << ")" << std::endl;
+			outFile << "Client ID: " << this->m_id << ", User: " << name << " (ID: " << id << ")" << std::endl;
 		}
 		else
 		{
 			cerr << "Error when open file to write." << endl;
 		}
 	}
-	cout << result << " request from: " << clientName << endl;
+	cout << result << " request from: " << m_client_name << endl;
 	return result;
 }

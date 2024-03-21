@@ -1,4 +1,7 @@
 .vs/
+.Bin/
+.Intermediate/
+.Lib/
 *.exe
 *.pdb
 *.obj

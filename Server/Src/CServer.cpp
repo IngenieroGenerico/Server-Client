@@ -1,94 +1,112 @@
 #include "CServer.h"
-CServer::CServer() : acceptor(io_context, tcp::endpoint(tcp::v4(), 8080)),
-lastActivityTime(chrono::steady_clock::now()), work(asio::make_work_guard(io_context)) 
+
+// Initialze variables in the constructor.
+CServer::CServer() : m_acceptor(m_context, tcp::endpoint(tcp::v4(), 8080)),
+m_last_activity(chrono::steady_clock::now()), m_work_context(asio::make_work_guard(m_context))
 {
-
-
-    generateFile();
-    // Iniciar la aceptación de conexiones y el monitoreo de actividad en hilos separados
-    thread([this]() { this->startAccept(); }).detach();
-    thread([this]() { this->activityMonitor(); }).detach();
-    // Lanzar hilos para ejecutar io_context.run()
-    const auto numThreads = max(2u, thread::hardware_concurrency() * 2); // Ejemplo: usar el doble de núcleos disponibles
-    for (unsigned i = 0; i < numThreads; ++i) {
-        ioContextThreads.emplace_back([this] { io_context.run(); });
-    }
+	//Create output file.
+	CreateOutputFile();
+	//Initialize threads for listening connections, activity and context.
+	StartThreads();
 }
 
-
-void CServer::generateFile() 
+void CServer::StartThreads()
 {
-    // Obtener el tiempo actual
-    std::time_t now = std::time(nullptr);
-    std::tm timeStruct = {}; // Crear una estructura tm vacía.
-
-    // Uso seguro dependiendo del entorno (en este caso, para MSVC)
-    localtime_s(&timeStruct, &now); // Rellenar timeStruct con el tiempo local
-
-    // Convertir tiempo a string con formato específico
-    std::ostringstream ss;
-    ss << std::put_time(&timeStruct, "users_%Y-%m-%d_%Hh-%Mm-%Ss.txt"); // Formato: users_AAAAmmdd_HHMMSS.txt
-    fileName = ss.str();
+	//Start conections aceptations and activity monitor on separated threads.
+	thread([this]() { this->Start(); }).detach();
+	thread([this]() { this->ActivityMonitor(); }).detach();
+	// Run threads to execute io_context.run()
+	// Use double of the threads available from the hardware.
+	const auto numThreads = max(2u, thread::hardware_concurrency() * 2); 
+	for (unsigned i = 0; i < numThreads; ++i)
+	{
+		m_threads_context.emplace_back([this] { m_context.run(); });
+	}
 }
 
-void CServer::startAccept() 
+void CServer::CreateOutputFile()
 {
-    while (!stopRequested) 
-    {
-        tcp::socket socket(io_context);
-        // El método accept() puede lanzar una excepción si el acceptor es cerrado, por lo que es necesario manejarlo adecuadamente.
-        try {
-            acceptor.accept(socket);
-        }
-        catch (exception& e) {
-            if (stopRequested) break; // Salir del bucle si se solicitó detener el servidor
-            throw; // Volver a lanzar la excepción si fue por otra razón
-        }
+	// Get actual time.
+	std::time_t now = std::time(nullptr);
+	std::tm timeStruct = {}; 
 
-        cout << "New request connection." << endl;
-        clientThreads.emplace_back([this, socket = move(socket)]() mutable {
-            CHandlerSession* newSession = new CHandlerSession(move(socket), this->clientThreads.size());
-            newSession->start();
-            this->lastActivityTime.store(chrono::steady_clock::now()); // Actualizar la última actividad
-            });
-    }
+	//Fill timestruct with local time.
+	localtime_s(&timeStruct, &now);
+
+	//Convert time to string with the specific format.
+	std::ostringstream ss;
+	ss << std::put_time(&timeStruct, "users_%Y-%m-%d_%Hh-%Mm-%Ss.txt"); 
+	m_file_name = ss.str();
 }
 
-void CServer::activityMonitor() 
+//Initialize Server.
+void CServer::Start()
 {
-    while (!stopRequested) {
-        auto currentTime = chrono::steady_clock::now();
-        auto lastActivity = lastActivityTime.load();
-        if (chrono::duration_cast<chrono::minutes>(currentTime - lastActivity) >= chrono::minutes(1)) {
-            cout << "Not request received for more than 1 minute..Shutting down the server." << endl;
-            stopRequested = true;
-            work.reset(); // Permitir que io_context finalice si no hay más trabajo
-            acceptor.close(); // Cerrar el acceptor para terminar el bucle de accept.
-            io_context.stop(); // Detener el io_context para finalizar cualquier operación asincrónica pendiente.
+	while (!m_stop_requested)
+	{
+		tcp::socket socket(m_context);
+		// El método accept() puede lanzar una excepción si el acceptor es cerrado, por lo que es necesario manejarlo adecuadamente.
+		try
+		{
+			m_acceptor.accept(socket);
+		}
+		catch (exception& e)
+		{
+			if (m_stop_requested) break; // Salir del bucle si se solicitó detener el servidor
+			throw; // Volver a lanzar la excepción si fue por otra razón
+		}
 
-            // Espera de 5 segundos antes de finalizar completamente
-            std::this_thread::sleep_for(std::chrono::seconds(5));
-            break;
-        }
-        this_thread::sleep_for(chrono::seconds(10)); // Esperar antes de la siguiente comprobación
-    }
+		cout << "New request connection." << endl;
+		m_client_threads.emplace_back([this, socket = move(socket)]() mutable {
+			CHandlerSession* newSession = new CHandlerSession(move(socket), this->m_client_threads.size(), &m_file_name);
+			newSession->Start();
+			this->m_last_activity.store(chrono::steady_clock::now()); // Actualizar la última actividad
+			});
+	}
 }
 
-CServer::~CServer() 
+void CServer::ActivityMonitor()
 {
-    // Asegurarse de que todos los hilos se unan antes de finalizar
-    for (auto& t : clientThreads) 
-    {
-        if (t.joinable()) 
-        {
-            t.join();
-        }
-    }
-    for (auto& t : ioContextThreads) // Asegurar que los hilos de io_context.run() también se unan
-    { 
-        if (t.joinable()) 
-        {
-            t.join();
-        }
-    }
+	//Check if there is not request for stop the server.
+	while (!m_stop_requested)
+	{
+		//Get actual time and last activity.
+		auto currentTime = chrono::steady_clock::now();
+		auto lastActivity = m_last_activity.load();
+		//Check if the last time that an activity was made it is more than 1 minute.
+		if (chrono::duration_cast<chrono::minutes>(currentTime - lastActivity) >= chrono::minutes(1))
+		{
+			cout << "Not request received for more than 1 minute..Shutting down the server." << endl;
+			m_stop_requested = true;
+			m_work_context.reset(); //Reset context if there is no more work to do.
+			m_acceptor.close(); //Close acceptor to finish accept loop.
+			m_context.stop(); //Stop io_context to finish any pendent asyncrhonous operation.
+
+			// Wait 5 seconds before stop the Server to avoid abrupt shutdown.
+			std::this_thread::sleep_for(std::chrono::seconds(5));
+			break;
+		}
+		//Wait before next comparation for activity.
+		this_thread::sleep_for(chrono::seconds(10)); 
+	}
+}
+
+CServer::~CServer()
+{
+	//Make sure all threads join together at the end to avoid conflicts.
+	for (auto& t : m_client_threads)
+	{
+		if (t.joinable())
+		{
+			t.join();
+		}
+	}
+	//Make sure all threads for context join together to.
+	for (auto& t : m_threads_context)
+	{
+		if (t.joinable())
+		{
+			t.join();
+		}
+	}
 }

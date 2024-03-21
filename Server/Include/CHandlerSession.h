@@ -3,31 +3,75 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <map>
 #include <asio.hpp>
 #include <asio/ip/tcp.hpp>
-#include <map>
 #include "ConsoleStyle.h"
-
 
 using namespace std;
 using asio::ip::tcp;
-static std::string fileName; // Nombre de archivo basado en la fecha y 
-class CHandlerSession {
+
+/**
+ * @brief .
+ */
+class CHandlerSession
+{
 
 public:
-    CHandlerSession(tcp::socket socket, int id);
-    void start();
-    void handleClient();
-
-    chrono::steady_clock::time_point getLastRequestTime()const;
+	/**
+	 * @brief Constructor.
+	 * @param socket
+	 * @param id
+	 */
+	CHandlerSession(tcp::socket socket, int id, string* pfile_name);
+	/**
+	 * @brief Destructor.
+	 */
+	~CHandlerSession();
+	/**
+	 * @brief .
+	 */
+	void Start();
+	/**
+	 * @brief .
+	 */
+	void HandleClient();
+	/**
+	 * @brief .
+	 * @return
+	 */
+	chrono::steady_clock::time_point getLastRequestTime()const;
 
 private:
-    tcp::socket socket;
-    int id;
-    string clientName;
-    map<int, string> userMap; // Almacenar usuarios por su ID
-    chrono::steady_clock::time_point lastRequestTime; // Tiempo de la última solicitud
-
-    string processRequest(const string& request);
+	/**
+	 * @brief Pointer to file name where all final data will be stored.
+	 */
+	string* p_file_name;
+	/**
+	 * @brief .
+	 */
+	tcp::socket m_socket;
+	/**
+	 * @brief .
+	 */
+	int m_id;
+	/**
+	 * @brief .
+	 */
+	string m_client_name;
+	/**
+	 * @brief .
+	 */
+	map<int, string> m_id_users; // Almacenar usuarios por su ID
+	/**
+	 * @brief .
+	 */
+	chrono::steady_clock::time_point m_last_request; // Tiempo de la última solicitud
+	/**
+	 * @brief .
+	 * @param request
+	 * @return 
+	 */
+	string ProcessRequest(const string& request);
 };
 
