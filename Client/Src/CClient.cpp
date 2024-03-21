@@ -10,10 +10,9 @@ CClient::~CClient()
 
 void CClient::Start()
 {
-    try {
-        //Change text color from console to print it with the specific color.
-        SetConsoleColor(WHITE);
-
+    try 
+    {
+       
         //Try to initializate context and create a connection to the specific PORT.
         asio::io_context context;
         tcp::socket socket(context);
@@ -21,8 +20,10 @@ void CClient::Start()
         asio::connect(socket, resolver.resolve("localhost", "8080"));
 
         // Logic to send Request to Server, every second.
-        while (m_ids.size() <= MAX_IDS) {
-            
+        while (m_ids.size() <= MAX_IDS) 
+        {
+            //Change text color from console to print it with the specific color.
+            SetConsoleColor(WHITE);
             //Create new user.
             CUser new_user;
             //Save new Id into the Id vector.
@@ -45,9 +46,10 @@ void CClient::Start()
             chrono::duration<double> response_time = end - start;
 
 
-            cout << "Request: Insert/User " << " id = " + new_user.GetId() << ", name = " + new_user.GetName() << endl;
+            cout << "Request: Insert/User " << " id = " + to_string(new_user.GetId()) << ", name = " + new_user.GetName() << endl;
             SetConsoleColor(YELLOW);
-            if (received == "DENIED id already exist") {
+            if (received == "DENIED id already exist") 
+            {
 
                 SetConsoleColor(RED);
             }
@@ -62,7 +64,8 @@ void CClient::Start()
         //Close socket to avoid execeptions or errors.
         socket.close();
     }
-    catch (exception& e) {
+    catch (exception& e) 
+    {
         //Catch Exception if exist and print it to the console.
         cerr << "Client Exception: " << e.what() << endl;
     }

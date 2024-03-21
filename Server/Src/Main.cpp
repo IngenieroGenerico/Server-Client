@@ -93,10 +93,10 @@ private:
             // Escribir en el archivo
             std::ofstream outFile(fileName, std::ios::app); // Usar el nombre de archivo del servidor
             if (outFile.is_open()) {
-                outFile << "Cliente ID: " << this->id << ", Usuario: " << name << " (ID: " << id << ")" << std::endl;
+                outFile << "Client ID: " << this->id << ", User: " << name << " (ID: " << id << ")" << std::endl;
             }
             else {
-                cerr << "Error al abrir el archivo para escribir." << endl;
+                cerr << "Error when open file to write." << endl;
             }
         }
         cout << result << " request from: " << clientName << endl;
@@ -162,7 +162,7 @@ public:
                 throw; // Volver a lanzar la excepción si fue por otra razón
             }
 
-            cout << "Nueva conexión entrante." << endl;
+            cout << "New request connection." << endl;
             clientThreads.emplace_back([this, socket = move(socket)]() mutable {
                 ClientSession* newSession = new ClientSession(move(socket), this->clientThreads.size());
                 newSession->start();
@@ -176,7 +176,7 @@ public:
             auto currentTime = chrono::steady_clock::now();
             auto lastActivity = lastActivityTime.load();
             if (chrono::duration_cast<chrono::minutes>(currentTime - lastActivity) >= chrono::minutes(1)) {
-                cout << "No se han recibido solicitudes de clientes durante más de 1 minuto. Terminando el servidor." << endl;
+                cout << "Not request received for more than 1 minute..Shutting down the server." << endl;
                 stopRequested = true;
                 work.reset(); // Permitir que io_context finalice si no hay más trabajo
                 acceptor.close(); // Cerrar el acceptor para terminar el bucle de accept.
