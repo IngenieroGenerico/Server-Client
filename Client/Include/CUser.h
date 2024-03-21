@@ -1,14 +1,23 @@
 #pragma once
+///******************************************************/
+///*			C++ Standar Library & STL.				*/
+///******************************************************/
 #include <string>
 #include <random>
 
+// using namespace of std to avoid to write it.
 using namespace std;
 /**
  * @brief Bassic class to store user data.
  */
 class CUser
 {
+	///**************************************************************************/
+	///*						  Member Variables.								*/
+	///**************************************************************************/
+	
 private:
+
 	/**
 	 * @brief Used to store user identifier.
 	 */
@@ -21,13 +30,13 @@ private:
 	 * @brief Used to store message that will be send it to server.
 	 */
 	string m_message;
-	/**
-	 * @brief Generate interger randomly with Mersenne Twister.
-	 * @return An interger generated randombly
-	 */
-	int GenerateId();
-
+	
+	///************************************************************************/
+	///*                            Constructor & Destructor.                 */
+	///************************************************************************/
+	
 public:
+
 	/**
 	 * @brief Constructor.
 	 */
@@ -36,6 +45,12 @@ public:
 	 * @brief Destructor.
 	 */
 	~CUser();
+
+	///************************************************************************/
+	///*						   Class Functions.							  */
+	///************************************************************************/
+	
+public:
 
 	/**
 	 * @brief Get user id.
@@ -52,6 +67,14 @@ public:
 	 * @return constant reference of user message. 
 	 */
 	const string& Message()const;
+
+private:
+
+	/**
+	 * @brief Generate interger randomly with Mersenne Twister.
+	 * @return An interger generated randombly
+	 */
+	int GenerateId();
 
 };
 
