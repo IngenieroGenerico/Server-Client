@@ -10,6 +10,7 @@ m_last_activity(chrono::steady_clock::now()), m_work_context(asio::make_work_gua
 	StartThreads();
 }
 
+//Initialize threads.
 void CServer::StartThreads()
 {
 	//Start conections aceptations and activity monitor on separated threads.
@@ -24,6 +25,7 @@ void CServer::StartThreads()
 	}
 }
 
+//Creates output file clients' insertions.
 void CServer::CreateOutputFile()
 {
 	// Get actual time.
@@ -45,26 +47,30 @@ void CServer::Start()
 	while (!m_stop_requested)
 	{
 		tcp::socket socket(m_context);
-		// El método accept() puede lanzar una excepción si el acceptor es cerrado, por lo que es necesario manejarlo adecuadamente.
 		try
 		{
+			//Accept metodh can trhow an excepcion if its not closed correctly, so is necesary to manage correctly.
 			m_acceptor.accept(socket);
 		}
 		catch (exception& e)
 		{
-			if (m_stop_requested) break; // Salir del bucle si se solicitó detener el servidor
-			throw; // Volver a lanzar la excepción si fue por otra razón
+			//Get out the loop if there is a stop request.
+			if (m_stop_requested) break; 
+			throw; // Throw the exeption again if it was for another reason.
 		}
 
 		cout << "New request connection." << endl;
 		m_client_threads.emplace_back([this, socket = move(socket)]() mutable {
-			CHandlerSession* newSession = new CHandlerSession(move(socket), this->m_client_threads.size(), &m_file_name);
+			shared_ptr<CHandlerSession> newSession = make_shared<CHandlerSession>(move(socket), this->m_client_threads.size(), &m_file_name);
+			//Initialize sesion.
 			newSession->Start();
-			this->m_last_activity.store(chrono::steady_clock::now()); // Actualizar la última actividad
+			//Update last activity.
+			this->m_last_activity.store(chrono::steady_clock::now());
 			});
 	}
 }
 
+//Check requests activity for clients.
 void CServer::ActivityMonitor()
 {
 	//Check if there is not request for stop the server.

@@ -1,54 +1,42 @@
 #pragma once
+///******************************************************/
+///*			C++ Standar Library & STL.				*/
+///******************************************************/
 #include <chrono>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <map>
+///******************************************************/
+///*					Asio.							*/
+///******************************************************/
 #include <asio.hpp>
 #include <asio/ip/tcp.hpp>
+///******************************************************/
+///*				Proyect Headers.					*/
+///******************************************************/
 #include "ConsoleStyle.h"
 
+// using namespace of std and asio::ip::tcp to avoid to write it.
 using namespace std;
 using asio::ip::tcp;
 
 /**
- * @brief .
+ * @brief Class for handler all sessions comming for client application.
  */
 class CHandlerSession
 {
-
-public:
-	/**
-	 * @brief Constructor.
-	 * @param socket
-	 * @param id
-	 */
-	CHandlerSession(tcp::socket socket, int id, string* pfile_name);
-	/**
-	 * @brief Destructor.
-	 */
-	~CHandlerSession();
-	/**
-	 * @brief .
-	 */
-	void Start();
-	/**
-	 * @brief .
-	 */
-	void HandleClient();
-	/**
-	 * @brief .
-	 * @return
-	 */
-	chrono::steady_clock::time_point getLastRequestTime()const;
-
+	///**************************************************************************/
+	///*						  Member Variables.								*/
+	///**************************************************************************/
+	
 private:
 	/**
 	 * @brief Pointer to file name where all final data will be stored.
 	 */
 	string* p_file_name;
 	/**
-	 * @brief .
+	 * @brief Used to create communications.
 	 */
 	tcp::socket m_socket;
 	/**
@@ -60,18 +48,55 @@ private:
 	 */
 	string m_client_name;
 	/**
-	 * @brief .
+	 * @brief Save users and ids comming from request.
 	 */
-	map<int, string> m_id_users; // Almacenar usuarios por su ID
+	map<int, string> m_id_users; 
+
+	///************************************************************************/
+	///*                            Constructor & Destructor.                 */
+	///************************************************************************/
+
+public:
 	/**
-	 * @brief .
+	 * @brief Constructor.
+	 * @param tcp::socket: socket for create communication.
+	 * @param int: id for client.
+	 * @param string*: pointer to file name from server.
 	 */
-	chrono::steady_clock::time_point m_last_request; // Tiempo de la última solicitud
+	CHandlerSession(tcp::socket socket, int id, string* pfile_name);
 	/**
-	 * @brief .
-	 * @param request
+	 * @brief Destructor.
+	 */
+	~CHandlerSession();
+
+
+	///************************************************************************/
+	///*						   Class Functions.							  */
+	///************************************************************************/
+
+public:
+	/**
+	 * @brief Initialize HandlerSession process.
+	 */
+	void Start();
+	/**
+	 * @brief Handler clients comming from Client proyect.
+	 */
+	void HandleClient();
+	/**
+	 * @brief Function where request will be process.
+	 * @param const string&: constant reference of the request.
 	 * @return 
 	 */
 	string ProcessRequest(const string& request);
+
+private:
+
+	/**
+	 * @brief Write user info comming for the client into the Output file.
+	 * @param int: id of the actual user.
+	 * @param string: name of the actual user.
+	 */
+	void WriteInOutputFile(int id, string name);
 };
 

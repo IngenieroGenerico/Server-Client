@@ -1,24 +1,27 @@
 #include "CHandlerSession.h"
 
+//Constructor
 CHandlerSession::CHandlerSession(tcp::socket socket, int id, string* pfile_name) : m_socket(move(socket)), m_id(id)
 {
 	p_file_name = pfile_name;
 }
 
+//Destructor
 CHandlerSession::~CHandlerSession()
 {
 }
 
+//Initialize HandlerSession process.
 void CHandlerSession::Start()
 {
-	// Asignar un nombre único al cliente
+	//Assign a unique name from this client.
 	m_client_name = "Client_" + to_string(m_id);
-	cout << "New connection: " << m_client_name << endl;
-
-	// Comenzar a manejar las interacciones con el cliente
+	cout << "New connection: " << m_client_name << endl << endl;
+	//Start handle client interactions.
 	HandleClient();
 }
 
+//Handler clients comming from Client proyect.
 void CHandlerSession::HandleClient()
 {
 	try
@@ -28,23 +31,23 @@ void CHandlerSession::HandleClient()
 			char data[1024];
 			asio::error_code error;
 			size_t length = m_socket.read_some(asio::buffer(data), error);
-			m_last_request = chrono::steady_clock::now(); // Actualizar el tiempo de la última solicitud
 
 			if (error == asio::error::eof)
 			{
+				//Connection was closed correctly.
 				cout << "Lost connection: " << m_client_name << endl;
-				break; // La conexión se cerró correctamente por el cliente.
+				break;
 			}
 			else if (error)
 			{
-				throw asio::system_error(error); // Otro error.
+				//throw unexpected error.
+				throw asio::system_error(error); 
 			}
+
 			string message(data, length);
-
-			// Procesar la solicitud del cliente
+			//Process client request.
 			string response = ProcessRequest(message);
-
-			// Enviar respuesta al cliente
+			//Send response to client.
 			asio::write(m_socket, asio::buffer(response));
 		}
 	}
@@ -54,15 +57,10 @@ void CHandlerSession::HandleClient()
 	}
 }
 
-chrono::steady_clock::time_point CHandlerSession::getLastRequestTime() const
-{
-	return m_last_request;
-}
-
-
+// Function where request will be process.
 string CHandlerSession::ProcessRequest(const string& request)
 {
-	// Analizar la solicitud del cliente
+	// Get the request and transform into its respectible variables.
 	stringstream ss(request);
 	int id;
 	string name;
@@ -78,21 +76,27 @@ string CHandlerSession::ProcessRequest(const string& request)
 	else
 	{
 		SetConsoleColor(WHITE);
-		// Almacenar el usuario en el mapa
+		// Store user id and name.
 		m_id_users[id] = name;
-		// Construir y devolver la respuesta
+		// Construct response to send it to the client.
 		result = "SUCCESS user added";
-		// Escribir en el archivo
-		std::ofstream outFile(*p_file_name, std::ios::app); // Usar el nombre de archivo del servidor
-		if (outFile.is_open())
-		{
-			outFile << "Client ID: " << this->m_id << ", User: " << name << " (ID: " << id << ")" << std::endl;
-		}
-		else
-		{
-			cerr << "Error when open file to write." << endl;
-		}
+		WriteInOutputFile(id, name);
 	}
 	cout << result << " request from: " << m_client_name << endl;
 	return result;
+}
+
+// Write user info comming for the client into the Output file.
+void CHandlerSession::WriteInOutputFile(int id, string name)
+{
+	// Write into the file comming from Server throught the pointer.
+	std::ofstream outFile(*p_file_name, std::ios::app); 
+	if (outFile.is_open())
+	{
+		outFile << "Client ID: " << this->m_id << ", User: " << name << " (ID: " << id << ")" << std::endl;
+	}
+	else
+	{
+		cerr << "Error when open file to write." << endl;
+	}
 }

@@ -12,7 +12,6 @@ void CClient::Start()
 {
     try 
     {
-       
         //Try to initializate context and create a connection to the specific PORT.
         asio::io_context context;
         tcp::socket socket(context);
@@ -30,7 +29,8 @@ void CClient::Start()
             StoreId(new_user.GetId());
 
 
-            //Initializa reques to Server, First save time when send the request.
+            //Initializa request to Server
+            // First save time when send the request.
             auto start = chrono::high_resolution_clock::now(); //Start time.
             //Write process...store the message into the buffer and send it through the socket.
             asio::write(socket, asio::buffer(new_user.Message() + "\n"));
@@ -45,7 +45,7 @@ void CClient::Start()
             //Get response time substracting the start time minus the end time.
             chrono::duration<double> response_time = end - start;
 
-
+            //Print data in console.
             cout << "Request: Insert/User " << " id = " + to_string(new_user.GetId()) << ", name = " + new_user.GetName() << endl;
             SetConsoleColor(YELLOW);
             if (received == "DENIED id already exist") 
@@ -91,3 +91,4 @@ void CClient::StoreId(int id)
         m_ids.push_back(id);
     }
 }
+
